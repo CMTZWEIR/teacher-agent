@@ -1,7 +1,7 @@
-streamlit==1.20.0  # Dashboard
-google-cloud-vision==3.4.0  # JPEG/PDF text extraction
-transformers==4.28.0  # Question generation
-torch==2.0.0  # Transformers backend
-pandas==2.0.0  # Test bank CSV
-pillow==10.0.0  # Image handling
-pdf2image==1.16.3  # PDF to image conversion
+streamlit==1.20.0
+google-cloud-vision==3.4.0
+transformers==4.28.0
+torch==2.0.0
+pandas==2.0.0
+pillow==10.0.0
+pdf2image==1.16.3
