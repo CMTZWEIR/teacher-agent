@@ -42,15 +42,15 @@ if quiz_file and key_input:
 st.header("Generate Questions from Notes")
 notes_file = st.file_uploader("Upload Board Notes (JPG, PNG, or PDF)", type=["jpg", "png", "pdf"])
 if notes_file:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "teacher-vision-key-.json"
+    client = vision.ImageAnnotatorClient()
     if notes_file.type == "application/pdf":
         images = convert_from_path(notes_file)
-        img = images[0].resize((int(images[0].width * 3), int(images[0].height * 3)), Image.Resampling.LANCZOS)
-        img = img.convert('L').filter(ImageFilter.SHARPEN).point(lambda x: 0 if x < 120 else 255, '1')
-        text = pytesseract.image_to_string(img, config='--psm 4 -l eng --oem 1')
+        content = images[0].tobytes()
     else:
-        img = Image.open(notes_file)
-        img = img.resize((int(img.width * 3), int(img.height * 3)), Image.Resampling.LANCZOS)
-        img = img.convert('L').filter(ImageFilter.SHARPEN).point(lambda x: 0 if x < 120 else 255, '1')
-        text = pytesseract.image_to_string(img, config='--psm 4 -l eng --oem 1')
+        content = notes_file.read()
+    image = vision.Image(content=content)
+    response = client.text_detection(image=image)
+    text = response.text_annotations[0].description if response.text_annotations else "No text detected"
     st.write("Extracted Notes:", text)
     st.write("Question generation coming soon with Hugging Face!")
