@@ -37,9 +37,13 @@ if quiz_file and key_input:
         st.write("Error: Couldn’t process some quizzes. Check scan quality.")
 
 st.header("Generate Questions from Notes")
-notes_file = st.file_uploader("Upload Board Notes Photo", type=["jpg", "png"])
+notes_file = st.file_uploader("Upload Board Notes (JPG, PNG, or PDF)", type=["jpg", "png", "pdf"])
 if notes_file:
-    img = Image.open(notes_file)
-    text = pytesseract.image_to_string(img)
+    if notes_file.type == "application/pdf":
+        images = convert_from_path(notes_file)
+        text = pytesseract.image_to_string(images[0])  # First page only for now
+    else:
+        img = Image.open(notes_file)
+        text = pytesseract.image_to_string(img)
     st.write("Extracted Notes:", text)
     st.write("Question generation coming soon with Hugging Face!")
