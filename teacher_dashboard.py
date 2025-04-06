@@ -41,9 +41,11 @@ notes_file = st.file_uploader("Upload Board Notes (JPG, PNG, or PDF)", type=["jp
 if notes_file:
     if notes_file.type == "application/pdf":
         images = convert_from_path(notes_file)
-        text = pytesseract.image_to_string(images[0])  # First page only for now
+        img = images[0].convert('L').point(lambda x: 0 if x < 128 else 255, '1')
+        text = pytesseract.image_to_string(img, config='--psm 6')
     else:
         img = Image.open(notes_file)
-        text = pytesseract.image_to_string(img)
+        img = img.convert('L').point(lambda x: 0 if x < 128 else 255, '1')
+        text = pytesseract.image_to_string(img, config='--psm 6')
     st.write("Extracted Notes:", text)
     st.write("Question generation coming soon with Hugging Face!")
