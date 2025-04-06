@@ -1,7 +1,7 @@
-streamlit
-pandas
-pytesseract
-pdf2image
-pillow
+streamlit==1.20.0  # Dashboard
+google-cloud-vision==3.4.0  # JPEG text extraction
+transformers==4.28.0  # Question generation
+torch==2.0.0  # Transformers backend
+pandas==2.0.0  # Test bank CSV
+pillow==10.0.0  # Image handling (if needed for uploads)
 poppler-utils
-google-cloud-vision
