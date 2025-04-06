@@ -6,8 +6,7 @@ from PIL import Image
 import re
 import os
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-os.environ["PATH"] += os.pathsep + r"C:\poppler\bin"
+# Cloud handles Tesseract and Poppler via requirements.txt
 
 st.title("Teacher AI Agent - Biology, Chemistry, Earth Science")
 
