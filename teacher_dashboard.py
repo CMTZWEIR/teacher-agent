@@ -6,6 +6,8 @@ from PIL import Image
 import re
 import os
 from PIL import ImageFilter
+from google.cloud import vision
+import io
 
 # Cloud handles Tesseract and Poppler via requirements.txt
 
