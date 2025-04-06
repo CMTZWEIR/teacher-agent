@@ -5,6 +5,7 @@ from pdf2image import convert_from_path
 from PIL import Image
 import re
 import os
+from PIL import ImageFilter
 
 # Cloud handles Tesseract and Poppler via requirements.txt
 
