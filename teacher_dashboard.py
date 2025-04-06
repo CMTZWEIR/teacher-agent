@@ -8,7 +8,7 @@ import os
 from PIL import ImageFilter
 from google.cloud import vision
 import io
-
+from google.oauth2 import service_account
 # Cloud handles Tesseract and Poppler via requirements.txt
 
 st.title("Teacher AI Agent - Biology, Chemistry, Earth Science")
@@ -42,8 +42,10 @@ if quiz_file and key_input:
 st.header("Generate Questions from Notes")
 notes_file = st.file_uploader("Upload Board Notes (JPG, PNG, or PDF)", type=["jpg", "png", "pdf"])
 if notes_file:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "teacher-vision-key-.json"
-    client = vision.ImageAnnotatorClient()
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"]
+    )
+    client = vision.ImageAnnotatorClient(credentials=credentials)
     if notes_file.type == "application/pdf":
         images = convert_from_path(notes_file)
         content = images[0].tobytes()
