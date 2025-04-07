@@ -8,5 +8,3 @@ pillow==10.0.0
 pdf2image==1.16.3
 # pytesseract
 numpy==1.23.5
-setuptools>=61.0
-wheel
