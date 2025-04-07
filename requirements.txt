@@ -3,8 +3,8 @@ google-cloud-vision==3.4.0
 # # ./wheelhouse/transformers-2.5.1-py3-none-any.whl
 transformers==4.16.0
 torch==2.2.0
-pandas==1.5.3
+pandas==1.5.0
 pillow==10.0.0
 pdf2image==1.16.3
 # pytesseract
-numpy==2.2.4
+numpy==1.23.5
