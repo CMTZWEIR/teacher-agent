@@ -5,4 +5,4 @@ torch==2.2.0
 pandas==1.5.3
 pillow==10.0.0
 pdf2image==1.16.3
-tokenizers==0.13.3
+https://files.pythonhosted.org/packages/5f/76/a0f2fb08a7aa8e5e562fa7c6c14403c850f93ab0ff460cf4e570d90423783/tokenizers-0.13.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
