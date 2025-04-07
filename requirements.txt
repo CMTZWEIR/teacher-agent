@@ -1,7 +1,7 @@
 streamlit==1.20.0
 google-cloud-vision==3.4.0
 # ./wheelhouse/transformers-2.5.1-py3-none-any.whl
-transformers==4.35.2
+transformers==4.30.0
 torch==2.2.0
 pandas==1.5.3
 pillow==10.0.0
