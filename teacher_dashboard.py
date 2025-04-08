@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import pytesseract
-from pdf2image import convert_from_bytes  # Use bytes for cloud
+from pdf2image import convert_from_bytes
 from PIL import Image
 import re
 import os
@@ -16,6 +16,10 @@ logging.info("Starting teacher_dashboard.py...")
 
 st.title("Teacher AI Agent - Biology, Chemistry, Earth Science")
 
+# Class Selection Dropdown
+class_option = st.selectbox("Select Class", ["Biology", "Chemistry", "Earth Science"])
+st.write(f"Selected class: {class_option}")
+
 # Quiz Grading Section
 st.header("Grade Quizzes")
 quiz_file = st.file_uploader("Upload Scanned Quiz PDF", type="pdf")
@@ -25,7 +29,7 @@ if quiz_file and key_input:
     try:
         logging.info("Processing quiz PDF...")
         key = key_input.split(",")
-        images = convert_from_bytes(quiz_file.read())  # Bytes for cloud
+        images = convert_from_bytes(quiz_file.read())
         student_data = []
         for i, img in enumerate(images):
             text = pytesseract.image_to_string(img)
@@ -36,7 +40,6 @@ if quiz_file and key_input:
                 student_data.append({"Student": name, "Answers": answers})
             else:
                 logging.warning(f"Student {name} has {len(answers)} answers, expected 10.")
-
         if student_data:
             df = pd.DataFrame(student_data)
             df[["Q1","Q2","Q3","Q4","Q5","Q6","Q7","Q8","Q9","Q10"]] = pd.DataFrame(df["Answers"].tolist())
@@ -77,3 +80,8 @@ if notes_file:
     except Exception as e:
         st.write("Error extracting notes:", str(e))
         logging.error(f"Notes extraction failed: {str(e)}")
+
+# Question Bank Button
+st.header("Question Bank")
+if st.button("View Question Bank"):
+    st.write(f"Showing question bank for {class_option} (coming soon!)")
