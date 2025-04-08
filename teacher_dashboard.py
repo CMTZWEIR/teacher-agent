@@ -1,58 +1,79 @@
 import streamlit as st
-from google.cloud import vision
-from transformers import pipeline
 import pandas as pd
-import os
-from pdf2image import convert_from_bytes
+import pytesseract
+from pdf2image import convert_from_bytes  # Use bytes for cloud
 from PIL import Image
+import re
+import os
+from google.cloud import vision
 import io
+from google.oauth2 import service_account
+import logging
 
-# Extract text from image (JPEG or PDF-converted)
-def extract_text(file, file_type):
-    client = vision.ImageAnnotatorClient()
-    if file_type == "pdf":
-        # Convert PDF to images
-        images = convert_from_bytes(file.read())
-        content = images[0].tobytes()  # First page only for now
-    else:
-        content = file.read()  # JPEG
-    image = vision.Image(content=content)
-    response = client.text_detection(image=image)
-    return response.text_annotations[0].description if response.text_annotations else ""
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logging.info("Starting teacher_dashboard.py...")
 
-# Streamlit app
-st.title("Teacher Dashboard")
-class_type = st.selectbox("Select Class", ["Biology", "Chemistry", "Earth Science"])
-uploaded_file = st.file_uploader(f"Upload {class_type} Notes (JPEG or PDF)", type=["jpg", "jpeg", "pdf"])
+st.title("Teacher AI Agent - Biology, Chemistry, Earth Science")
 
-if uploaded_file:
-    # Determine file type
-    file_type = uploaded_file.type.split('/')[-1]  # e.g., "jpeg" or "pdf"
-    extracted_text = extract_text(uploaded_file, file_type)
-    st.write(f"{class_type} Extracted Notes:", extracted_text)
+# Quiz Grading Section
+st.header("Grade Quizzes")
+quiz_file = st.file_uploader("Upload Scanned Quiz PDF", type="pdf")
+key_input = st.text_input("Enter Quiz Key (e.g., A,C,B,B,D,C,A,B,D,C)")
 
-    # Generate question with Hugging Face
-    generator = pipeline("text2text-generation", model="t5-small")
-    question = generator(f"generate question: {extracted_text.split('.')[0]}", max_length=50)
-    q_text = question[0]['generated_text']
-    answer = extracted_text.split('.')[0]
-    st.write(f"Question: {q_text}")
-    st.write(f"A. {answer}")
+if quiz_file and key_input:
+    try:
+        logging.info("Processing quiz PDF...")
+        key = key_input.split(",")
+        images = convert_from_bytes(quiz_file.read())  # Bytes for cloud
+        student_data = []
+        for i, img in enumerate(images):
+            text = pytesseract.image_to_string(img)
+            name_match = re.search(r"Name:\s*(.+)", text)
+            name = name_match.group(1) if name_match else f"Student_{i+1}"
+            answers = [re.search(r"\d+\.\s*([A-D])", line).group(1) for line in text.split("\n") if re.search(r"\d+\.\s*([A-D])", line)]
+            if len(answers) == 10:
+                student_data.append({"Student": name, "Answers": answers})
+            else:
+                logging.warning(f"Student {name} has {len(answers)} answers, expected 10.")
 
-    # Save to Test Bank
-    if st.button("Save to Test Bank"):
-        data = {"Class": class_type, "Question": q_text, "Answer": f"A. {answer}"}
-        df = pd.DataFrame([data])
-        if os.path.exists("test_bank.csv"):
-            df.to_csv("test_bank.csv", mode="a", header=False, index=False)
+        if student_data:
+            df = pd.DataFrame(student_data)
+            df[["Q1","Q2","Q3","Q4","Q5","Q6","Q7","Q8","Q9","Q10"]] = pd.DataFrame(df["Answers"].tolist())
+            df = df.drop("Answers", axis=1)
+            key_series = pd.Series(key, index=["Q1","Q2","Q3","Q4","Q5","Q6","Q7","Q8","Q9","Q10"])
+            df["Score"] = (df.iloc[:, 1:] == key_series).sum(axis=1)
+            st.write("Grades:", df[["Student", "Score"]])
+            st.download_button("Download Grades", df.to_csv(index=False), "graded_quiz.csv")
+            logging.info("Quiz grading completed successfully.")
         else:
-            df.to_csv("test_bank.csv", index=False)
-        st.success("Saved to Test Bank!")
+            st.write("Error: Couldn’t process some quizzes. Check scan quality.")
+            logging.error("No valid student data extracted from quiz PDF.")
+    except Exception as e:
+        st.write("Error processing quiz:", str(e))
+        logging.error(f"Quiz processing failed: {str(e)}")
 
-# View Test Bank
-if st.checkbox("View Test Bank"):
-    if os.path.exists("test_bank.csv"):
-        df = pd.read_csv("test_bank.csv")
-        st.dataframe(df[df["Class"] == class_type])
-    else:
-        st.write("No Test Bank yet!")
+# Notes Extraction Section
+st.header("Generate Questions from Notes")
+notes_file = st.file_uploader("Upload Board Notes (JPG, PNG, or PDF)", type=["jpg", "png", "pdf"])
+if notes_file:
+    try:
+        logging.info("Extracting text from notes...")
+        credentials = service_account.Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"]
+        )
+        client = vision.ImageAnnotatorClient(credentials=credentials)
+        if notes_file.type == "application/pdf":
+            images = convert_from_bytes(notes_file.read())
+            content = images[0].tobytes()
+        else:
+            content = notes_file.read()
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image)
+        text = response.text_annotations[0].description if response.text_annotations else "No text detected"
+        st.write("Extracted Notes:", text)
+        st.write("Question generation coming soon with Hugging Face!")
+        logging.info("Notes extraction completed successfully.")
+    except Exception as e:
+        st.write("Error extracting notes:", str(e))
+        logging.error(f"Notes extraction failed: {str(e)}")
