@@ -1,5 +1,5 @@
 tesseract-ocr
 poppler-utils
 rustc
-openai
+
 
