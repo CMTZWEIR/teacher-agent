@@ -31,7 +31,10 @@ if not check_password():
     st.stop()
 
 # Connect to OpenAI
+# Connect to OpenAI
+st.write("🔍 Secrets available at runtime:", list(st.secrets.keys()))  # Debug line
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+
 
 # App title
 st.title("Teacher Dashboard – Quiz Grader & AI Assistant")
