@@ -5,3 +5,5 @@ pdf2image
 Pillow
 google-cloud-vision
 PyMuPDF
+openai
+
