@@ -107,10 +107,13 @@ if st.button("Ask AI") and user_input:
     st.session_state.chat_history.append(("🧑 Teacher", user_input))
 
     response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input},
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_input},
+    ]
+)
+
         ]
     )
 
