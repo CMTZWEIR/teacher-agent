@@ -32,7 +32,8 @@ if not check_password():
 
 # Connect to OpenAI
 # Connect to OpenAI
-st.write("🔍 Secrets available at runtime:", list(st.secrets.keys()))  # Debug line
+# st.write("🔍 Secrets available at runtime:", list(st.secrets.keys()))
+
 openai.api_key = st.secrets["openai"]["api_key"]
 
 
