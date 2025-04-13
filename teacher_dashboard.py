@@ -7,6 +7,7 @@ import pandas as pd
 import io
 import datetime
 import openai
+from openai import OpenAI
 
 # 🔐 Password Gate
 def check_password():
@@ -30,13 +31,8 @@ def check_password():
 if not check_password():
     st.stop()
 
-# Connect to OpenAI
-# Connect to OpenAI
-# st.write("🔍 Secrets available at runtime:", list(st.secrets.keys()))
-
-openai.api_key = st.secrets["openai"]["api_key"]
-
-
+# ✅ Set OpenAI API key from secrets
+client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
 # App title
 st.title("Teacher Dashboard – Quiz Grader & AI Assistant")
@@ -110,7 +106,7 @@ if st.button("Ask AI") and user_input:
 
     st.session_state.chat_history.append(("🧑 Teacher", user_input))
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": system_prompt},
@@ -118,7 +114,7 @@ if st.button("Ask AI") and user_input:
         ]
     )
 
-    reply = response["choices"][0]["message"]["content"]
+    reply = response.choices[0].message.content
     st.session_state.chat_history.append(("🤖 AI", reply))
 
 # Display chat history
