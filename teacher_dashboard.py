@@ -110,14 +110,17 @@ def get_ai_response(user_input):
                 messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_input}]
             )
             return response.choices[0].message.content
-        except openai.error.RateLimitError:
-            if attempt < max_retries - 1:
-                # Wait before retrying
-                st.warning(f"Rate limit hit. Retrying in {retry_delay} seconds...")
+        except openai.error.OpenAIError as e:
+            # Catch any OpenAI-related errors
+            if e.code == 'insufficient_quota':
+                st.error("You have exceeded your quota. Please check your billing details.")
+                return None
+            elif attempt < max_retries - 1:
+                st.warning(f"Error: {str(e)}. Retrying in {retry_delay} seconds...")
                 time.sleep(retry_delay)
                 retry_delay *= 2  # Exponential backoff
             else:
-                st.error("Rate limit exceeded after multiple attempts.")
+                st.error(f"Error after multiple retries: {str(e)}")
                 return None
 
 if st.button("Ask AI") and user_input:
@@ -138,5 +141,3 @@ if st.button("Ask AI") and user_input:
 # Display chat history
 for speaker, message in st.session_state.chat_history:
     st.markdown(f"**{speaker}:** {message}")
-
-      
