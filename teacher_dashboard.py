@@ -6,7 +6,9 @@ import re
 import pandas as pd
 import io
 import datetime
+import time
 from openai import OpenAI
+import openai
 
 # 🔐 Password Gate
 def check_password():
@@ -96,6 +98,28 @@ if "chat_history" not in st.session_state:
 
 user_input = st.text_input("Type your question or request here")
 
+def get_ai_response(user_input):
+    max_retries = 5  # Max retries for rate limit errors
+    retry_delay = 2  # Initial retry delay (in seconds)
+
+    for attempt in range(max_retries):
+        try:
+            # OpenAI API request to chat with AI
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_input}]
+            )
+            return response.choices[0].message.content
+        except openai.error.RateLimitError:
+            if attempt < max_retries - 1:
+                # Wait before retrying
+                st.warning(f"Rate limit hit. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                st.error("Rate limit exceeded after multiple attempts.")
+                return None
+
 if st.button("Ask AI") and user_input:
     system_prompt = (
         "You are a helpful teaching assistant for a high school science teacher. "
@@ -105,17 +129,14 @@ if st.button("Ask AI") and user_input:
 
     st.session_state.chat_history.append(("🧑 Teacher", user_input))
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input},
-        ]
-    )
+    # Call the function to get AI response with rate limiting and retry logic
+    reply = get_ai_response(user_input)
 
-    reply = response.choices[0].message.content
-    st.session_state.chat_history.append(("🤖 AI", reply))
+    if reply:
+        st.session_state.chat_history.append(("🤖 AI", reply))
 
 # Display chat history
 for speaker, message in st.session_state.chat_history:
     st.markdown(f"**{speaker}:** {message}")
+
+      
