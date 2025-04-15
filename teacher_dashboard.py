@@ -11,20 +11,18 @@ from openai import OpenAI
 import openai
 
 # 🔐 Password Gate
-def check_password():
-    def password_entered():
-        if st.session_state["password"] == st.secrets["password"]:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]
-        else:
-            st.session_state["password_correct"] = False
-
-    if "password_correct" not in st.session_state:
-        st.text_input("Enter Password", type="password", on_change=password_entered, key="password")
-        return False
-    elif not st.session_state["password_correct"]:
-        st.text_input("Enter Password", type="password", on_change=password_entered, key="password")
+def password_entered():
+    # Debugging line
+    st.write(f"Entered password: {st.session_state['password']}")
+    st.write(f"Stored password: {st.secrets['password']}")
+    
+    if st.session_state["password"] == st.secrets["password"]:
+        st.session_state["password_correct"] = True
+        del st.session_state["password"]
+    else:
+        st.session_state["password_correct"] = False
         st.error("😕 Incorrect password")
+
         return False
     else:
         return True
