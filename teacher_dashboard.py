@@ -13,7 +13,7 @@ import openai
 # 🔐 Password Gate
 def check_password():
     def password_entered():
-        if st.session_state["password"] == "RLWteacher2024":
+        if st.session_state["password"] == st.secrets["password"]:
             st.session_state["password_correct"] = True
             del st.session_state["password"]
         else:
@@ -37,6 +37,13 @@ client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
 # App title
 st.title("Teacher Dashboard – Quiz Grader & AI Assistant")
+
+# Define the system prompt for AI
+system_prompt = (
+    "You are a helpful teaching assistant for a high school science teacher. "
+    "Answer using clear, supportive language. Be concise but creative. "
+    "Provide ideas for multiple choice questions, analogies, or summaries for Chemistry, Biology, or Earth Science."
+)
 
 # Upload scanned quiz
 uploaded_file = st.file_uploader("Upload a scanned student quiz (PDF only)", type="pdf")
@@ -124,12 +131,6 @@ def get_ai_response(user_input):
                 return None
 
 if st.button("Ask AI") and user_input:
-    system_prompt = (
-        "You are a helpful teaching assistant for a high school science teacher. "
-        "Answer using clear, supportive language. Be concise but creative. "
-        "Provide ideas for multiple choice questions, analogies, or summaries for Chemistry, Biology, or Earth Science."
-    )
-
     st.session_state.chat_history.append(("🧑 Teacher", user_input))
 
     # Call the function to get AI response with rate limiting and retry logic
